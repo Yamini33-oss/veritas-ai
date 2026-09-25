@@ -1,0 +1,185 @@
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap");
+
+@theme {
+  /* Base surfaces — warm graphite / near-black */
+  --color-void: #0b0a08;
+  --color-chamber: #14120f;
+  --color-chamber-raised: #1d1a15;
+  --color-chamber-line: #2c2720;
+
+  /* Accents — amber / copper / ivory */
+  --color-amber: #e2a343;
+  --color-amber-dim: #a97a34;
+  --color-copper: #b96b3f;
+  --color-ivory: #f1e8d8;
+  --color-ivory-dim: #cabfa9;
+
+  /* Special states */
+  --color-coral: #c15c46;
+  --color-verified: #7c9b74;
+  --color-cyan: #6ba39c;
+
+  --font-display: "Fraunces", "Iowan Old Style", serif;
+  --font-sans: "IBM Plex Sans", -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--color-void);
+  color: var(--color-ivory);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--color-amber);
+  color: var(--color-void);
+}
+
+/* Atmospheric wash, applied once at the document level */
+.chamber-atmosphere {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(120% 90% at 78% -10%, rgba(226, 163, 67, 0.08), transparent 55%),
+    radial-gradient(90% 70% at 5% 110%, rgba(185, 107, 63, 0.07), transparent 60%);
+}
+
+.chamber-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.verify-page {
+  background:
+    radial-gradient(70% 35% at 50% 38%, rgba(226, 163, 67, 0.05), transparent 70%),
+    linear-gradient(180deg, transparent 0%, rgba(185, 107, 63, 0.025) 55%, transparent 100%);
+}
+
+.verify-kicker,
+.verify-result-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.verify-kicker::before,
+.verify-result-head::before {
+  content: "";
+  width: 2.5rem;
+  height: 1px;
+  background: var(--color-amber);
+  opacity: 0.75;
+}
+
+.verify-claim-input {
+  background: linear-gradient(180deg, rgba(20, 18, 15, 0.24), transparent);
+}
+
+.verify-chamber-wrap {
+  position: relative;
+}
+
+.verify-chamber {
+  isolation: isolate;
+  background: #0b0a08;
+  box-shadow: 0 0 100px rgba(185, 107, 63, 0.08), inset 0 0 80px rgba(226, 163, 67, 0.04);
+}
+
+.verify-chamber::before,
+.verify-chamber::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-color: rgba(226, 163, 67, 0.5);
+}
+
+.verify-chamber::before {
+  top: 1rem;
+  left: 1rem;
+  border-top: 1px solid;
+  border-left: 1px solid;
+}
+
+.verify-chamber::after {
+  right: 1rem;
+  bottom: 1rem;
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+}
+
+.chamber-grid {
+  background-image: linear-gradient(rgba(226, 163, 67, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(226, 163, 67, 0.06) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, transparent, black 25%, black 70%, transparent);
+}
+
+.chamber-orbit {
+  z-index: 1;
+  pointer-events: none;
+  border: 1px solid rgba(226, 163, 67, 0.16);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-12deg);
+}
+
+.chamber-orbit-one {
+  width: 78%;
+  height: 42%;
+}
+
+.chamber-orbit-two {
+  width: 58%;
+  height: 62%;
+  border-color: rgba(185, 107, 63, 0.13);
+  transform: translate(-50%, -50%) rotate(28deg);
+}
+
+.verify-chamber-label {
+  z-index: 4;
+}
+
+.verify-verdict-word {
+  text-shadow: 0 0 42px rgba(226, 163, 67, 0.16);
+}
+
+.verify-feed {
+  max-width: 900px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:focus-visible {
+  outline: 1.5px solid var(--color-amber);
+  outline-offset: 3px;
+}

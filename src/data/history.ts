@@ -1,0 +1,145 @@
+import type { VerificationRecord } from "../types/verification";
+
+export const HISTORY: VerificationRecord[] = [
+  {
+    id: "vf-2049",
+    date: "2026-09-18",
+    type: "Factual",
+    claim: "The Great Wall of China is visible from space with the naked eye.",
+    verdict: "contradicted",
+    confidence: 0.91,
+    agentsUsed: [
+      "orchestrator",
+      "reasoner",
+      "researcher",
+      "analyzer",
+      "critic",
+      "evidence-verifier",
+      "contradiction-detector",
+      "judge",
+    ],
+    contradictions: [
+      "Evidence Verifier found the commonly cited claim traces back to a single uncorroborated 19th-century source, not any astronaut account.",
+    ],
+    findings: [
+      { agentId: "reasoner", note: "The claim is physically implausible given the Wall's width relative to orbital viewing distance.", confidence: 0.88 },
+      { agentId: "researcher", note: "Multiple astronauts have stated the Wall is not distinguishable from low Earth orbit without aid.", confidence: 0.93 },
+      { agentId: "critic", note: "Popular belief in the claim doesn't make it true — treated as a myth, not evidence.", confidence: 0.9 },
+      { agentId: "judge", note: "Contradicted. The claim is a persistent myth unsupported by direct testimony or optics.", confidence: 0.91 },
+    ],
+  },
+  {
+    id: "vf-2044",
+    date: "2026-09-14",
+    type: "Scientific",
+    claim: "Vaccines cause autism.",
+    verdict: "contradicted",
+    confidence: 0.97,
+    agentsUsed: [
+      "orchestrator",
+      "reasoner",
+      "researcher",
+      "analyzer",
+      "critic",
+      "evidence-verifier",
+      "contradiction-detector",
+      "judge",
+    ],
+    contradictions: [],
+    findings: [
+      { agentId: "researcher", note: "Large-scale cohort studies across multiple countries show no causal link.", confidence: 0.98 },
+      { agentId: "evidence-verifier", note: "The original study behind this claim was retracted for data manipulation.", confidence: 0.97 },
+      { agentId: "analyzer", note: "No plausible biological mechanism has been established despite decades of study.", confidence: 0.95 },
+      { agentId: "judge", note: "Contradicted with high confidence. The scientific consensus is unambiguous.", confidence: 0.97 },
+    ],
+  },
+  {
+    id: "vf-2038",
+    date: "2026-09-09",
+    type: "Statistical",
+    claim: "Renewable energy now supplies over 30% of global electricity generation.",
+    verdict: "supported",
+    confidence: 0.82,
+    agentsUsed: [
+      "orchestrator",
+      "reasoner",
+      "researcher",
+      "analyzer",
+      "evidence-verifier",
+      "judge",
+    ],
+    contradictions: [],
+    findings: [
+      { agentId: "researcher", note: "Recent energy-agency figures place renewables just above the 30% threshold.", confidence: 0.8 },
+      { agentId: "analyzer", note: "Figures vary by a few points depending on how hydropower is categorized.", confidence: 0.75 },
+      { agentId: "judge", note: "Supported, with a note that the exact figure is source-dependent.", confidence: 0.82 },
+    ],
+  },
+  {
+    id: "vf-2031",
+    date: "2026-09-03",
+    type: "Historical",
+    claim: "The Apollo 11 moon landing occurred in 1969.",
+    verdict: "supported",
+    confidence: 0.99,
+    agentsUsed: ["orchestrator", "reasoner", "researcher", "judge"],
+    contradictions: [],
+    findings: [
+      { agentId: "researcher", note: "Independently corroborated by mission logs, broadcast records and retroreflector experiments still in use today.", confidence: 0.99 },
+      { agentId: "judge", note: "Supported beyond reasonable doubt.", confidence: 0.99 },
+    ],
+  },
+  {
+    id: "vf-2027",
+    date: "2026-08-27",
+    type: "Policy",
+    claim: "The proposed transit expansion will cut average commute times by half.",
+    verdict: "inconclusive",
+    confidence: 0.54,
+    agentsUsed: [
+      "orchestrator",
+      "reasoner",
+      "researcher",
+      "analyzer",
+      "critic",
+      "contradiction-detector",
+      "judge",
+    ],
+    contradictions: [
+      "Critic and Analyzer disagree on whether the ridership model accounts for peak-hour congestion.",
+    ],
+    findings: [
+      { agentId: "analyzer", note: "The modeling assumes uniform demand, which likely overstates the improvement.", confidence: 0.6 },
+      { agentId: "critic", note: "A 50% cut is an outlier claim compared to similar transit expansions elsewhere.", confidence: 0.48 },
+      { agentId: "judge", note: "Inconclusive. Directionally plausible, but the specific figure isn't well supported.", confidence: 0.54 },
+    ],
+  },
+  {
+    id: "vf-2019",
+    date: "2026-08-19",
+    type: "Scientific",
+    claim: "Coffee consumption has no effect on long-term cardiovascular health.",
+    verdict: "inconclusive",
+    confidence: 0.58,
+    agentsUsed: [
+      "orchestrator",
+      "reasoner",
+      "researcher",
+      "evidence-verifier",
+      "contradiction-detector",
+      "judge",
+    ],
+    contradictions: [
+      "Evidence Verifier found studies split between mild protective and mild negative effects depending on quantity.",
+    ],
+    findings: [
+      { agentId: "researcher", note: "Findings differ by consumption level, brewing method and existing health conditions.", confidence: 0.55 },
+      { agentId: "evidence-verifier", note: "No single study in the set is large enough to be treated as conclusive on its own.", confidence: 0.52 },
+      { agentId: "judge", note: "Inconclusive. The evidence doesn't cleanly support or contradict a 'no effect' claim.", confidence: 0.58 },
+    ],
+  },
+];
+
+export function findVerification(id: string): VerificationRecord | undefined {
+  return HISTORY.find((record) => record.id === id);
+}
