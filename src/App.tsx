@@ -4,6 +4,7 @@ import Footer from "./components/layout/Footer";
 import Landing from "./pages/Landing";
 import Agents from "./pages/Agents";
 import Verify from "./pages/Verify";
+import Compare from "./pages/Compare";
 import LiveVerification from "./pages/LiveVerification";
 import Report from "./pages/Report";
 import History from "./pages/History";
@@ -14,18 +15,31 @@ export default function App() {
     <div className="relative min-h-screen flex flex-col">
       <div className="chamber-atmosphere" />
       <div className="chamber-grain" />
+
       <Nav />
+
       <main className="flex-1 flex flex-col">
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/agents" element={<Agents />} />
           <Route path="/verify" element={<Verify />} />
-          <Route path="/verification/:id" element={<LiveVerification />} />
-          <Route path="/report/:id" element={<Report />} />
+          <Route path="/compare" element={<Compare />} />
+          <Route
+            path="/verification/:id"
+            element={<LiveVerification />}
+          />
+          <Route
+            path="/report/:id"
+            element={<Report />}
+          />
           <Route path="/history" element={<History />} />
-          <Route path="/how-it-works" element={<HowItWorksPage />} />
+          <Route
+            path="/how-it-works"
+            element={<HowItWorksPage />}
+          />
         </Routes>
       </main>
+
       <Footer />
     </div>
   );

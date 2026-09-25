@@ -9,14 +9,20 @@ import {
   WAITING_TASK,
 } from "../data/simulation";
 
-export type SimulationStatus = "idle" | "running" | "complete";
+export type SimulationStatus =
+  | "idle"
+  | "running"
+  | "complete";
 
 const RUNNING_DURATION_MS = 1100;
 const STAGE_GAP_MS = 260;
 
 function formatTimestamp(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+
+  return `${pad(date.getHours())}:${pad(
+    date.getMinutes()
+  )}:${pad(date.getSeconds())}`;
 }
 
 function delay(ms: number) {
@@ -25,20 +31,31 @@ function delay(ms: number) {
 
 export function useCouncilSimulation() {
   const [agents, setAgents] = useState<Agent[]>(AGENTS);
-  const [status, setStatus] = useState<SimulationStatus>("idle");
+  const [status, setStatus] =
+    useState<SimulationStatus>("idle");
   const [log, setLog] = useState<AgentLogEntry[]>([]);
+
   const runIdRef = useRef(0);
 
-  const setAgentField = useCallback((id: AgentRole, patch: Partial<Agent>) => {
-    setAgents((current) =>
-      current.map((agent) => (agent.id === id ? { ...agent, ...patch } : agent))
-    );
-  }, []);
+  const setAgentField = useCallback(
+    (id: AgentRole, patch: Partial<Agent>) => {
+      setAgents((current) =>
+        current.map((agent) =>
+          agent.id === id
+            ? { ...agent, ...patch }
+            : agent
+        )
+      );
+    },
+    []
+  );
 
   const run = useCallback(async () => {
     const runId = ++runIdRef.current;
+
     setStatus("running");
     setLog([]);
+
     setAgents(
       AGENTS.map((agent) => ({
         ...agent,
@@ -48,12 +65,25 @@ export function useCouncilSimulation() {
       }))
     );
 
+    setLog([
+      {
+        agentId: SIMULATION_ORDER[0],
+        status: "waiting",
+        message: "Verification initialized.",
+        timestamp: formatTimestamp(new Date()),
+      },
+    ]);
+
     await delay(STAGE_GAP_MS);
 
     for (const id of SIMULATION_ORDER) {
       if (runIdRef.current !== runId) return;
 
-      setAgentField(id, { status: "running", currentTask: RUNNING_ACTION[id] });
+      setAgentField(id, {
+        status: "running",
+        currentTask: RUNNING_ACTION[id],
+      });
+
       setLog((current) => [
         ...current,
         {
@@ -65,15 +95,28 @@ export function useCouncilSimulation() {
       ]);
 
       await delay(RUNNING_DURATION_MS);
+
       if (runIdRef.current !== runId) return;
 
-      const original = AGENTS.find((agent) => agent.id === id);
-      const finalStatus = original?.status === "warning" ? "warning" : "completed";
+      const original = AGENTS.find(
+        (agent) => agent.id === id
+      );
+
       setAgentField(id, {
-        status: finalStatus,
+        status: "completed",
         confidence: original?.confidence ?? null,
         currentTask: COMPLETED_TASK[id],
       });
+
+      setLog((current) => [
+        ...current,
+        {
+          agentId: id,
+          status: "completed",
+          message: COMPLETED_TASK[id],
+          timestamp: formatTimestamp(new Date()),
+        },
+      ]);
 
       await delay(STAGE_GAP_MS);
     }
@@ -85,6 +128,7 @@ export function useCouncilSimulation() {
 
   const reset = useCallback(() => {
     runIdRef.current += 1;
+
     setAgents(AGENTS);
     setStatus("idle");
     setLog([]);
@@ -96,5 +140,11 @@ export function useCouncilSimulation() {
     };
   }, []);
 
-  return { agents, status, log, run, reset };
+  return {
+    agents,
+    status,
+    log,
+    run,
+    reset,
+  };
 }

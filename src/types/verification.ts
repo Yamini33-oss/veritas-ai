@@ -32,4 +32,12 @@ export interface VerificationRecord {
   agentsUsed: AgentRole[];
   contradictions: string[];
   findings: VerificationFinding[];
+
+  sources?: string[];
+
+  judgeDetails?: {
+    keySupportingFindings: string[];
+    keyConcerns: string[];
+    contradictionsResolved: boolean;
+  };
 }
