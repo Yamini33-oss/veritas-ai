@@ -1,24 +1,44 @@
-import type { AgentRole, AgentStatus } from "./agent";
 
+import type { AgentStatus } from "./agent";
 export interface AgentLogEntry {
   agentId: AgentRole;
   status: AgentStatus;
   message: string;
   timestamp: string;
 }
-
-export type Verdict = "supported" | "contradicted" | "inconclusive";
-
 export type VerificationType =
   | "Factual"
-  | "Statistical"
-  | "Historical"
   | "Scientific"
+  | "Historical"
+  | "Statistical"
   | "Policy";
+
+export type Verdict =
+  | "supported"
+  | "contradicted"
+  | "inconclusive";
+
+export type AgentRole =
+  | "orchestrator"
+  | "reasoner"
+  | "researcher"
+  | "analyzer"
+  | "critic"
+  | "evidence-verifier"
+  | "contradiction-detector"
+  | "judge";
 
 export interface VerificationFinding {
   agentId: AgentRole;
   note: string;
+  confidence: number;
+}
+
+export interface SubclaimVerification {
+  subclaim: string;
+  verdict: Verdict;
+  explanation: string;
+  keyFactors: string[];
   confidence: number;
 }
 
@@ -40,4 +60,12 @@ export interface VerificationRecord {
     keyConcerns: string[];
     contradictionsResolved: boolean;
   };
+
+  decomposition?: {
+    isComplex: boolean;
+    subclaims: string[];
+    reasoning: string;
+  };
+
+  subclaimResults?: SubclaimVerification[];
 }

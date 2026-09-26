@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { askGemini } from "./services/gemini.js";
+import { runDecomposer } from "./agents/decomposer.js";
 import { runReasoner } from "./agents/reasoner.js";
 import { runResearcher } from "./agents/researcher.js";
 import { runAnalyzer } from "./agents/analyzer.js";
@@ -10,7 +11,6 @@ import { runEvidenceVerifier } from "./agents/evidenceVerifier.js";
 import { runContradictionDetector } from "./agents/contradictionDetector.js";
 import { runJudge } from "./agents/judge.js";
 import { runVerificationPipeline } from "./services/verification.js";
-
 
 dotenv.config();
 
@@ -25,6 +25,41 @@ app.get("/api/health", (_req, res) => {
     success: true,
     message: "VERITAS backend is running",
   });
+});
+
+// --------------------------------------------------
+// TEST: CLAIM DECOMPOSER
+// --------------------------------------------------
+
+app.post("/api/test-decomposer", async (req, res) => {
+  try {
+    const { claim } = req.body;
+
+    if (!claim) {
+      return res.status(400).json({
+        success: false,
+        error: "Claim is required",
+      });
+    }
+
+    const result = await runDecomposer(claim);
+
+    res.json({
+      success: true,
+      agent: "Claim Decomposer",
+      result,
+    });
+  } catch (error) {
+    console.error("Decomposer error:", error);
+
+    res.status(500).json({
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : String(error),
+    });
+  }
 });
 
 app.get("/api/test-gemini", async (_req, res) => {
@@ -42,7 +77,10 @@ app.get("/api/test-gemini", async (_req, res) => {
 
     res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : String(error),
+      error:
+        error instanceof Error
+          ? error.message
+          : String(error),
     });
   }
 });
@@ -70,7 +108,10 @@ app.post("/api/test-reasoner", async (req, res) => {
 
     res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : String(error),
+      error:
+        error instanceof Error
+          ? error.message
+          : String(error),
     });
   }
 });
@@ -98,10 +139,14 @@ app.post("/api/test-researcher", async (req, res) => {
 
     res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : String(error),
+      error:
+        error instanceof Error
+          ? error.message
+          : String(error),
     });
   }
 });
+
 app.post("/api/test-analyzer", async (req, res) => {
   try {
     const { claim } = req.body;
@@ -125,10 +170,14 @@ app.post("/api/test-analyzer", async (req, res) => {
 
     res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : String(error),
+      error:
+        error instanceof Error
+          ? error.message
+          : String(error),
     });
   }
 });
+
 app.post("/api/test-critic", async (req, res) => {
   try {
     const {
@@ -162,10 +211,14 @@ app.post("/api/test-critic", async (req, res) => {
 
     res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : String(error),
+      error:
+        error instanceof Error
+          ? error.message
+          : String(error),
     });
   }
 });
+
 app.post("/api/test-evidence-verifier", async (req, res) => {
   try {
     const { claim, researcherResult } = req.body;
@@ -199,10 +252,14 @@ app.post("/api/test-evidence-verifier", async (req, res) => {
 
     res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : String(error),
+      error:
+        error instanceof Error
+          ? error.message
+          : String(error),
     });
   }
 });
+
 app.post("/api/test-contradiction", async (req, res) => {
   try {
     const {
@@ -240,10 +297,14 @@ app.post("/api/test-contradiction", async (req, res) => {
 
     res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : String(error),
+      error:
+        error instanceof Error
+          ? error.message
+          : String(error),
     });
   }
 });
+
 app.post("/api/test-judge", async (req, res) => {
   try {
     const {
@@ -283,10 +344,14 @@ app.post("/api/test-judge", async (req, res) => {
 
     res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : String(error),
+      error:
+        error instanceof Error
+          ? error.message
+          : String(error),
     });
   }
 });
+
 app.post("/api/verify", async (req, res) => {
   try {
     const { claim } = req.body;
@@ -298,7 +363,9 @@ app.post("/api/verify", async (req, res) => {
       });
     }
 
-    console.log(`\nStarting VERITAS verification for: "${claim}"`);
+    console.log(
+      `\nStarting VERITAS verification for: "${claim}"`
+    );
 
     const result = await runVerificationPipeline(claim);
 
@@ -311,10 +378,14 @@ app.post("/api/verify", async (req, res) => {
 
     res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : String(error),
+      error:
+        error instanceof Error
+          ? error.message
+          : String(error),
     });
   }
 });
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`VERITAS backend running on port ${PORT}`);
 });

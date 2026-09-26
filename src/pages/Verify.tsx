@@ -5,7 +5,11 @@ import CouncilChamber from "../components/visuals/CouncilChamber";
 import ActivityFeed from "../components/agents/ActivityFeed";
 import { useCouncilSimulation } from "../hooks/useCouncilSimulation";
 import { SIMULATION_ORDER } from "../data/simulation";
-import type { VerificationRecord, Verdict } from "../types/verification";
+import type {
+  VerificationRecord,
+  Verdict,
+  SubclaimVerification,
+} from "../types/verification";
 import { VERDICT_TEXT } from "../components/history/verdictStyles";
 import { detectClaimType } from "../utils/detectClaimType";
 
@@ -14,6 +18,20 @@ const API_BASE_URL =
 
 interface BackendResult {
   claim: string;
+
+  decomposition?: {
+    isComplex: boolean;
+    subclaims: string[];
+    reasoning: string;
+  };
+
+  subclaimResults?: Array<{
+    subclaim: string;
+    verdict: Verdict;
+    explanation: string;
+    keyFactors: string[];
+    confidence: number;
+  }>;
 
   agents: {
     reasoner: {
@@ -84,6 +102,17 @@ function buildRecordFromBackend(
 ): VerificationRecord {
   const agents = result.agents;
 
+  const subclaimResults: SubclaimVerification[] =
+    (result.subclaimResults ?? []).map(
+      (item) => ({
+        subclaim: item.subclaim,
+        verdict: item.verdict,
+        explanation: item.explanation,
+        keyFactors: item.keyFactors,
+        confidence: item.confidence,
+      })
+    );
+
   return {
     id: "live",
     date: new Date().toISOString().slice(0, 10),
@@ -101,11 +130,28 @@ function buildRecordFromBackend(
     judgeDetails: {
       keySupportingFindings:
         agents.judge.keySupportingFindings,
+
       keyConcerns:
         agents.judge.keyConcerns,
+
       contradictionsResolved:
         agents.judge.contradictionsResolved,
     },
+
+    decomposition: result.decomposition
+      ? {
+          isComplex:
+            result.decomposition.isComplex,
+
+          subclaims:
+            result.decomposition.subclaims,
+
+          reasoning:
+            result.decomposition.reasoning,
+        }
+      : undefined,
+
+    subclaimResults,
 
     findings: [
       {
@@ -117,7 +163,8 @@ function buildRecordFromBackend(
       {
         agentId: "researcher",
         note: agents.researcher.evidence,
-        confidence: agents.researcher.confidence,
+        confidence:
+          agents.researcher.confidence,
       },
 
       {
@@ -141,19 +188,23 @@ function buildRecordFromBackend(
         note:
           `${agents.evidenceVerifier.verification} ` +
           `Evidence strength: ${agents.evidenceVerifier.evidenceStrength}.`,
-        confidence: agents.evidenceVerifier.confidence,
+        confidence:
+          agents.evidenceVerifier.confidence,
       },
 
       {
         agentId: "contradiction-detector",
-        note: agents.contradictionDetector.analysis,
-        confidence: agents.contradictionDetector.confidence,
+        note:
+          agents.contradictionDetector.analysis,
+        confidence:
+          agents.contradictionDetector.confidence,
       },
 
       {
         agentId: "judge",
         note: agents.judge.finalReasoning,
-        confidence: agents.judge.confidence,
+        confidence:
+          agents.judge.confidence,
       },
     ],
   };
@@ -162,7 +213,8 @@ function buildRecordFromBackend(
 export default function Verify() {
   const navigate = useNavigate();
 
-  const { agents, log, run } = useCouncilSimulation();
+  const { agents, log, run } =
+    useCouncilSimulation();
 
   const [claim, setClaim] = useState("");
   const [submittedClaim, setSubmittedClaim] =
@@ -171,12 +223,16 @@ export default function Verify() {
   const [record, setRecord] =
     useState<VerificationRecord | null>(null);
 
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] =
+    useState(false);
 
-  const [verificationState, setVerificationState] = useState<
-    "idle" | "running" | "success" | "error"
-  >("idle");
+  const [error, setError] =
+    useState<string | null>(null);
+
+  const [verificationState, setVerificationState] =
+    useState<
+      "idle" | "running" | "success" | "error"
+    >("idle");
 
   const handleSubmit = async () => {
     const cleanClaim = claim.trim();
@@ -210,9 +266,14 @@ export default function Verify() {
       const data =
         (await response.json()) as BackendResponse;
 
-      if (!response.ok || !data.success || !data.result) {
+      if (
+        !response.ok ||
+        !data.success ||
+        !data.result
+      ) {
         throw new Error(
-          data.error ?? "VERITAS verification failed."
+          data.error ??
+            "VERITAS verification failed."
         );
       }
 
@@ -249,10 +310,12 @@ export default function Verify() {
         </h1>
 
         <p className="mt-6 max-w-xl text-ivory-dim text-sm leading-relaxed">
-          State something you want checked. VERITAS sends the
-          claim to the live multi-agent backend for independent
-          reasoning, analysis, challenge, evidence verification,
-          contradiction detection, and final judgment.
+          State something you want checked. VERITAS
+          sends the claim to the live multi-agent
+          backend for independent reasoning, analysis,
+          challenge, evidence verification,
+          contradiction detection, and final
+          judgment.
         </p>
       </section>
 
@@ -273,9 +336,10 @@ export default function Verify() {
             </p>
 
             <p>
-              The AI verification service is temporarily
-              unavailable. Please try again after the service
-              becomes available.
+              The AI verification service is
+              temporarily unavailable. Please try
+              again after the service becomes
+              available.
             </p>
           </div>
         )}
@@ -285,7 +349,10 @@ export default function Verify() {
         <>
           <section className="verify-chamber-wrap mx-auto max-w-[1440px] px-0 md:px-6">
             <div className="verify-chamber relative min-h-[540px] md:min-h-[700px] overflow-hidden">
-              <CouncilChamber agents={agents} variant="full" />
+              <CouncilChamber
+                agents={agents}
+                variant="full"
+              />
 
               <div className="verify-chamber-label absolute left-6 top-6 md:left-10 md:top-8 font-mono text-[10px] text-ivory-dim/60 tracking-[0.18em]">
                 COUNCIL / 08 NODES /{" "}
@@ -304,22 +371,24 @@ export default function Verify() {
             </div>
 
             <div className="mt-6 max-w-5xl">
-  <p className="font-display text-2xl md:text-4xl leading-tight text-ivory">
-    “{submittedClaim}”
-  </p>
-</div>
+              <p className="font-display text-2xl md:text-4xl leading-tight text-ivory">
+                “{submittedClaim}”
+              </p>
+            </div>
 
-{record && (
-  <div className="mt-5">
-    <span className="inline-flex items-center border border-chamber-line px-3 py-1 font-mono text-[10px] tracking-[0.16em] text-copper">
-      CLAIM TYPE · {record.type.toUpperCase()}
-    </span>
-  </div>
-)}
+            {record && (
+              <div className="mt-5">
+                <span className="inline-flex items-center border border-chamber-line px-3 py-1 font-mono text-[10px] tracking-[0.16em] text-copper">
+                  CLAIM TYPE ·{" "}
+                  {record.type.toUpperCase()}
+                </span>
+              </div>
+            )}
 
-{processing && !record && (
+            {processing && !record && (
               <div className="mt-12 font-mono text-xs text-copper tracking-[0.16em]">
-                VERITAS COUNCIL IS ANALYZING THE CLAIM...
+                VERITAS COUNCIL IS ANALYZING THE
+                CLAIM...
               </div>
             )}
 
@@ -333,9 +402,11 @@ export default function Verify() {
                   <div
                     className={`verify-verdict-word font-display text-7xl sm:text-8xl md:text-[10rem] leading-[0.78] ${VERDICT_TEXT[record.verdict]}`}
                   >
-                    {record.verdict === "contradicted"
+                    {record.verdict ===
+                    "contradicted"
                       ? "REFUTED"
-                      : record.verdict === "inconclusive"
+                      : record.verdict ===
+                          "inconclusive"
                         ? "UNCERTAIN"
                         : "SUPPORTED"}
                   </div>
@@ -349,7 +420,9 @@ export default function Verify() {
                   <p
                     className={`font-display text-6xl md:text-8xl leading-none mt-2 ${VERDICT_TEXT[record.verdict]}`}
                   >
-                    {Math.round(record.confidence * 100)}
+                    {Math.round(
+                      record.confidence * 100
+                    )}
                     <span className="text-3xl md:text-5xl">
                       %
                     </span>

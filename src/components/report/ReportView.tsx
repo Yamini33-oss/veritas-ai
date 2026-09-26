@@ -11,6 +11,20 @@ export default function ReportView({
 }: {
   record: VerificationRecord;
 }) {
+  const verdictLabel = (
+    verdict: VerificationRecord["verdict"]
+  ) => {
+    if (verdict === "contradicted") {
+      return "REFUTED";
+    }
+
+    if (verdict === "inconclusive") {
+      return "UNCERTAIN";
+    }
+
+    return "SUPPORTED";
+  };
+
   return (
     <div>
       <p className="font-mono text-xs text-copper mb-4">
@@ -28,7 +42,8 @@ export default function ReportView({
           <span
             className={`w-2 h-2 rounded-full ${VERDICT_DOT[record.verdict]}`}
           />
-          {record.verdict.toUpperCase()}
+
+          {verdictLabel(record.verdict)}
         </span>
 
         <div className="flex items-center gap-2">
@@ -50,6 +65,159 @@ export default function ReportView({
         </div>
       </div>
 
+      {/* CLAIM DECOMPOSITION */}
+      {record.decomposition?.isComplex &&
+        record.subclaimResults &&
+        record.subclaimResults.length > 0 && (
+          <div className="mt-14 pt-8 border-t border-chamber-line">
+            <p className="font-mono text-[11px] text-ivory-dim/60 mb-3 tracking-wide">
+              CLAIM DECOMPOSITION
+            </p>
+
+            <p className="max-w-3xl text-sm text-ivory-dim/70 leading-relaxed mb-8">
+              This claim contains multiple independently
+              testable assertions. VERITAS evaluated each
+              part separately before forming the overall
+              judgment.
+            </p>
+
+            {record.decomposition.reasoning && (
+              <div className="mb-8 border-l-2 border-copper/50 pl-4 max-w-3xl">
+                <p className="font-mono text-[10px] text-copper mb-2 tracking-wide">
+                  DECOMPOSER
+                </p>
+
+                <p className="text-sm text-ivory-dim leading-relaxed">
+                  {record.decomposition.reasoning}
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-6 max-w-4xl">
+              {record.subclaimResults.map(
+                (subclaim, index) => {
+                  const percentage = Math.round(
+                    subclaim.confidence * 100
+                  );
+
+                  return (
+                    <div
+                      key={`${subclaim.subclaim}-${index}`}
+                      className="border border-chamber-line p-5 md:p-6"
+                    >
+                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                        <div className="flex gap-4">
+                          <span className="font-mono text-[10px] text-copper pt-1">
+                            {String(index + 1).padStart(
+                              2,
+                              "0"
+                            )}
+                          </span>
+
+                          <div>
+                            <p className="font-display text-xl text-ivory leading-tight">
+                              {subclaim.subclaim}
+                            </p>
+
+                            <span
+                              className={`inline-flex items-center gap-2 mt-3 font-mono text-[10px] ${VERDICT_TEXT[subclaim.verdict]}`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${VERDICT_DOT[subclaim.verdict]}`}
+                              />
+
+                              {verdictLabel(
+                                subclaim.verdict
+                              )}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="md:text-right shrink-0">
+                          <p className="font-mono text-[9px] text-ivory-dim/50 tracking-wide">
+                            CONFIDENCE
+                          </p>
+
+                          <p
+                            className={`font-mono text-sm mt-1 ${VERDICT_TEXT[subclaim.verdict]}`}
+                          >
+                            {percentage}%
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 h-1 bg-chamber-line overflow-hidden">
+                        <div
+                          className="h-full bg-amber"
+                          style={{
+                            width: `${percentage}%`,
+                          }}
+                        />
+                      </div>
+
+                      <div className="mt-5">
+                        <p className="font-mono text-[10px] text-copper tracking-wide mb-2">
+                          WHY
+                        </p>
+
+                        <p className="text-sm text-ivory-dim leading-relaxed">
+                          {subclaim.explanation}
+                        </p>
+                      </div>
+
+                      {subclaim.keyFactors.length >
+                        0 && (
+                        <div className="mt-5">
+                          <p className="font-mono text-[10px] text-ivory-dim/60 tracking-wide mb-2">
+                            KEY FACTORS
+                          </p>
+
+                          <ul className="space-y-2">
+                            {subclaim.keyFactors.map(
+                              (factor, factorIndex) => (
+                                <li
+                                  key={`${factor}-${factorIndex}`}
+                                  className="text-sm text-ivory-dim flex gap-2 leading-relaxed"
+                                >
+                                  <span className="text-copper">
+                                    •
+                                  </span>
+
+                                  <span>
+                                    {factor}
+                                  </span>
+                                </li>
+                              )
+                            )}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+              )}
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-chamber-line max-w-4xl">
+              <p className="font-mono text-[10px] text-ivory-dim/60 tracking-wide">
+                OVERALL SYNTHESIS
+              </p>
+
+              <p
+                className={`font-display text-2xl mt-2 ${VERDICT_TEXT[record.verdict]}`}
+              >
+                {verdictLabel(record.verdict)}
+              </p>
+
+              <p className="mt-2 text-sm text-ivory-dim/70 leading-relaxed">
+                The final Judge considered the individual
+                subclaim outcomes together with the wider
+                council findings.
+              </p>
+            </div>
+          </div>
+        )}
+
       {/* AGENTS USED */}
       <div className="mt-10">
         <p className="font-mono text-[11px] text-ivory-dim/60 mb-3 tracking-wide">
@@ -69,7 +237,8 @@ export default function ReportView({
               <span
                 className="w-1 h-1 rounded-full"
                 style={{
-                  backgroundColor: accentForAgentId(id),
+                  backgroundColor:
+                    accentForAgentId(id),
                 }}
               />
 
@@ -97,7 +266,9 @@ export default function ReportView({
                   <span
                     className="font-mono text-[10px]"
                     style={{
-                      color: accentForAgentId(finding.agentId),
+                      color: accentForAgentId(
+                        finding.agentId
+                      ),
                     }}
                   >
                     {agentNameForId(
@@ -157,11 +328,15 @@ export default function ReportView({
                 <p
                   className="font-mono text-[10px] mb-1"
                   style={{
-                    color: accentForAgentId(f.agentId),
+                    color: accentForAgentId(
+                      f.agentId
+                    ),
                   }}
                 >
-                  {agentNameForId(f.agentId).toUpperCase()} ·{" "}
-                  {Math.round(f.confidence * 100)}%
+                  {agentNameForId(
+                    f.agentId
+                  ).toUpperCase()}{" "}
+                  · {Math.round(f.confidence * 100)}%
                 </p>
 
                 <p className="text-sm text-ivory-dim leading-relaxed">
@@ -177,7 +352,8 @@ export default function ReportView({
             CONTRADICTIONS
           </p>
 
-          {record.contradictions.length === 0 ? (
+          {record.contradictions.length ===
+          0 ? (
             <p className="text-sm text-ivory-dim/60">
               None flagged in this session.
             </p>
@@ -198,61 +374,74 @@ export default function ReportView({
       </div>
 
       {/* SOURCES */}
-      {record.sources && record.sources.length > 0 && (
-        <div className="mt-14 pt-8 border-t border-chamber-line">
-          <p className="font-mono text-[11px] text-ivory-dim/60 mb-4 tracking-wide">
-            RESEARCH SOURCES
-          </p>
+      {record.sources &&
+        record.sources.length > 0 && (
+          <div className="mt-14 pt-8 border-t border-chamber-line">
+            <p className="font-mono text-[11px] text-ivory-dim/60 mb-4 tracking-wide">
+              RESEARCH SOURCES
+            </p>
 
-          <div className="space-y-4">
-            {record.sources.map((source, index) => {
-              const separator = " — ";
-              const separatorIndex =
-                source.lastIndexOf(separator);
+            <div className="space-y-4">
+              {record.sources.map(
+                (source, index) => {
+                  const separator = " — ";
 
-              const title =
-                separatorIndex !== -1
-                  ? source.slice(0, separatorIndex)
-                  : source;
+                  const separatorIndex =
+                    source.lastIndexOf(
+                      separator
+                    );
 
-              const url =
-                separatorIndex !== -1
-                  ? source.slice(
-                      separatorIndex + separator.length
-                    )
-                  : "";
+                  const title =
+                    separatorIndex !== -1
+                      ? source.slice(
+                          0,
+                          separatorIndex
+                        )
+                      : source;
 
-              return (
-                <div
-                  key={`${source}-${index}`}
-                  className="flex gap-3 text-sm"
-                >
-                  <span className="font-mono text-[10px] text-copper">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
+                  const url =
+                    separatorIndex !== -1
+                      ? source.slice(
+                          separatorIndex +
+                            separator.length
+                        )
+                      : "";
 
-                  <div className="min-w-0">
-                    <p className="text-ivory-dim leading-relaxed">
-                      {title}
-                    </p>
+                  return (
+                    <div
+                      key={`${source}-${index}`}
+                      className="flex gap-3 text-sm"
+                    >
+                      <span className="font-mono text-[10px] text-copper">
+                        {String(index + 1).padStart(
+                          2,
+                          "0"
+                        )}
+                      </span>
 
-                    {url && (
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-1 block text-xs text-copper hover:text-amber transition-colors break-all"
-                      >
-                        {url}
-                      </a>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                      <div className="min-w-0">
+                        <p className="text-ivory-dim leading-relaxed">
+                          {title}
+                        </p>
+
+                        {url && (
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-1 block text-xs text-copper hover:text-amber transition-colors break-all"
+                          >
+                            {url}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* JUDGE READOUT */}
       {record.judgeDetails && (
@@ -262,14 +451,14 @@ export default function ReportView({
           </p>
 
           <div className="grid md:grid-cols-2 gap-10">
-            {/* Supporting findings */}
             <div>
               <p className="font-mono text-[10px] text-copper tracking-wide mb-3">
                 KEY SUPPORTING FINDINGS
               </p>
 
-              {record.judgeDetails.keySupportingFindings
-                .length === 0 ? (
+              {record.judgeDetails
+                .keySupportingFindings.length ===
+              0 ? (
                 <p className="text-sm text-ivory-dim/60">
                   None recorded.
                 </p>
@@ -293,13 +482,13 @@ export default function ReportView({
               )}
             </div>
 
-            {/* Concerns */}
             <div>
               <p className="font-mono text-[10px] text-coral tracking-wide mb-3">
                 KEY CONCERNS
               </p>
 
-              {record.judgeDetails.keyConcerns.length === 0 ? (
+              {record.judgeDetails.keyConcerns
+                .length === 0 ? (
                 <p className="text-sm text-ivory-dim/60">
                   None recorded.
                 </p>
@@ -331,12 +520,14 @@ export default function ReportView({
 
             <span
               className={
-                record.judgeDetails.contradictionsResolved
+                record.judgeDetails
+                  .contradictionsResolved
                   ? "font-mono text-xs text-copper"
                   : "font-mono text-xs text-coral"
               }
             >
-              {record.judgeDetails.contradictionsResolved
+              {record.judgeDetails
+                .contradictionsResolved
                 ? "YES"
                 : "NO"}
             </span>
